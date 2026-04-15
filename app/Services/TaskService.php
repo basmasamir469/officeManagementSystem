@@ -30,8 +30,25 @@ class TaskService
         return $tasks;
     }
 
+    public function getAllTasks()
+    {
+        $tasks = $this->taskRepository->getAll();
+
+        foreach ($tasks as $task) {
+            if ($task->status !== 'completed' && $task->deadline->isPast()) {
+                $task = $this->taskRepository->update($task->id, [
+                    'status' => 'late',
+                ]);
+            }
+        }
+
+        return $tasks;
+    }
+
     public function createTask(array $data)
     {
+        $data['status'] = $data['status'] ?? 'pending';
+
         $task = $this->taskRepository->create($data);
 
         if ($task && $task->employee) {
