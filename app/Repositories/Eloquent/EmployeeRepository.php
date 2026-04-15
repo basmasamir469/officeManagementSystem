@@ -17,6 +17,11 @@ class EmployeeRepository implements EmployeeRepositoryInterface
         return Employee::find($id);
     }
 
+    public function findByEmail(string $email)
+    {
+        return Employee::where('email', $email)->first();
+    }
+
     public function create(array $data)
     {
         return Employee::create($data);

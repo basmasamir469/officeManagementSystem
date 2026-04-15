@@ -3,21 +3,23 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
+use App\Services\UserService;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-    public function __construct()
+    protected UserService $userService;
+
+    public function __construct(UserService $userService)
     {
-        // Authentication is handled by route middleware.
+        $this->userService = $userService;
     }
 
     public function index()
     {
-        $users = User::orderBy('name')->paginate(15);
+        $users = $this->userService->getUsersPaginated(15);
 
         return view('admin.users.index', compact('users'));
     }
@@ -27,39 +29,38 @@ class UserController extends Controller
         return view('admin.users.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreUserRequest $request)
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-        ]);
-
+        $data = $request->validated();
         $data['password'] = Hash::make($data['password']);
 
-        User::create($data);
+        $this->userService->createUser($data);
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User created successfully.');
     }
 
-    public function show(User $user)
+    public function show(int $id)
     {
+        $user = $this->userService->getUser($id);
+
+        abort_if(! $user, 404);
+
         return view('admin.users.show', compact('user'));
     }
 
-    public function edit(User $user)
+    public function edit(int $id)
     {
+        $user = $this->userService->getUser($id);
+
+        abort_if(! $user, 404);
+
         return view('admin.users.edit', compact('user'));
     }
 
-    public function update(Request $request, User $user)
+    public function update(UpdateUserRequest $request, int $id)
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-        ]);
+        $data = $request->validated();
 
         if (! empty($data['password'])) {
             $data['password'] = Hash::make($data['password']);
@@ -67,15 +68,15 @@ class UserController extends Controller
             unset($data['password']);
         }
 
-        $user->update($data);
+        $this->userService->updateUser($id, $data);
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User updated successfully.');
     }
 
-    public function destroy(User $user)
+    public function destroy(int $id)
     {
-        $user->delete();
+        $this->userService->deleteUser($id);
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User deleted successfully.');

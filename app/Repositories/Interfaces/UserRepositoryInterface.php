@@ -2,7 +2,7 @@
 
 namespace App\Repositories\Interfaces;
 
-interface AttendanceRepositoryInterface
+interface UserRepositoryInterface
 {
     public function getAll();
 
@@ -15,10 +15,4 @@ interface AttendanceRepositoryInterface
     public function update(int $id, array $data);
 
     public function delete(int $id): bool;
-
-    public function findByEmployeeAndDate(int $employeeId, string $date);
-
-    public function getByEmployeeId(int $employeeId);
-
-    public function getTodayRecords(string $date);
 }

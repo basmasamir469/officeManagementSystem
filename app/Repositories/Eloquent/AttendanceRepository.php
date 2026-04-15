@@ -12,6 +12,11 @@ class AttendanceRepository implements AttendanceRepositoryInterface
         return Attendance::with('employee')->orderByDesc('date')->get();
     }
 
+    public function paginate(int $perPage = 15)
+    {
+        return Attendance::with('employee')->orderByDesc('date')->paginate($perPage);
+    }
+
     public function findById(int $id)
     {
         return Attendance::with('employee')->find($id);
@@ -51,6 +56,14 @@ class AttendanceRepository implements AttendanceRepositoryInterface
         return Attendance::where('employee_id', $employeeId)
             ->where('date', $date)
             ->first();
+    }
+
+    public function getByEmployeeId(int $employeeId)
+    {
+        return Attendance::with('employee')
+            ->where('employee_id', $employeeId)
+            ->orderByDesc('date')
+            ->get();
     }
 
     public function getTodayRecords(string $date)

@@ -2,25 +2,24 @@
 
 namespace App\Models;
 
+use App\Models\Employee;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Attendance extends Model
+class Task extends Model
 {
     use HasFactory;
 
     protected $fillable = [
+        'title',
+        'description',
         'employee_id',
-        'date',
-        'check_in_time',
-        'check_out_time',
+        'deadline',
         'status',
     ];
 
     protected $casts = [
-        'date' => 'date',
-        'check_in_time' => 'datetime:H:i',
-        'check_out_time' => 'datetime:H:i',
+        'deadline' => 'date',
     ];
 
     public function employee()

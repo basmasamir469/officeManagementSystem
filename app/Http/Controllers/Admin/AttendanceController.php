@@ -3,78 +3,75 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Attendance;
-use App\Models\Employee;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreAttendanceRequest;
+use App\Http\Requests\UpdateAttendanceRequest;
+use App\Services\AttendanceService;
+use App\Services\EmployeeService;
 
 class AttendanceController extends Controller
 {
-    public function __construct()
+    protected AttendanceService $attendanceService;
+    protected EmployeeService $employeeService;
+
+    public function __construct(AttendanceService $attendanceService, EmployeeService $employeeService)
     {
-        // Authentication is enforced by admin route middleware.
+        $this->attendanceService = $attendanceService;
+        $this->employeeService = $employeeService;
     }
 
     public function index()
     {
-        $records = Attendance::with('employee')
-            ->orderByDesc('date')
-            ->paginate(15);
+        $records = $this->attendanceService->getAttendancesPaginated(15);
 
         return view('admin.attendances.index', compact('records'));
     }
 
     public function create()
     {
-        $employees = Employee::orderBy('name')->get();
+        $employees = $this->employeeService->getAllEmployees();
 
         return view('admin.attendances.create', compact('employees'));
     }
 
-    public function store(Request $request)
+    public function store(StoreAttendanceRequest $request)
     {
-        $data = $request->validate([
-            'employee_id' => ['required', 'exists:employees,id'],
-            'date' => ['required', 'date'],
-            'check_in_time' => ['nullable', 'date_format:H:i'],
-            'check_out_time' => ['nullable', 'date_format:H:i'],
-        ]);
-
-        Attendance::create($data);
+        $this->attendanceService->createAttendance($request->validated());
 
         return redirect()->route('admin.attendances.index')
             ->with('success', 'Attendance record created successfully.');
     }
 
-    public function show(Attendance $attendance)
+    public function show(int $id)
     {
+        $attendance = $this->attendanceService->getAttendance($id);
+
+        abort_if(! $attendance, 404);
+
         return view('admin.attendances.show', compact('attendance'));
     }
 
-    public function edit(Attendance $attendance)
+    public function edit(int $id)
     {
-        $employees = Employee::orderBy('name')->get();
+        $attendance = $this->attendanceService->getAttendance($id);
+
+        abort_if(! $attendance, 404);
+
+        $employees = $this->employeeService->getAllEmployees();
 
         return view('admin.attendances.edit', compact('attendance', 'employees'));
     }
 
-    public function update(Request $request, Attendance $attendance)
+    public function update(UpdateAttendanceRequest $request, int $id)
     {
-        $data = $request->validate([
-            'employee_id' => ['required', 'exists:employees,id'],
-            'date' => ['required', 'date'],
-            'check_in_time' => ['nullable', 'date_format:H:i'],
-            'check_out_time' => ['nullable', 'date_format:H:i'],
-        ]);
-
-        $attendance->update($data);
+        $this->attendanceService->updateAttendance($id, $request->validated());
 
         return redirect()->route('admin.attendances.index')
             ->with('success', 'Attendance record updated successfully.');
     }
 
-    public function destroy(Attendance $attendance)
+    public function destroy(int $id)
     {
-        $attendance->delete();
+        $this->attendanceService->deleteAttendance($id);
 
         return redirect()->route('admin.attendances.index')
             ->with('success', 'Attendance record deleted successfully.');

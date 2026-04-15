@@ -2,11 +2,9 @@
 
 namespace App\Repositories\Interfaces;
 
-interface AttendanceRepositoryInterface
+interface TaskRepositoryInterface
 {
     public function getAll();
-
-    public function paginate(int $perPage = 15);
 
     public function findById(int $id);
 
@@ -16,9 +14,5 @@ interface AttendanceRepositoryInterface
 
     public function delete(int $id): bool;
 
-    public function findByEmployeeAndDate(int $employeeId, string $date);
-
     public function getByEmployeeId(int $employeeId);
-
-    public function getTodayRecords(string $date);
 }
