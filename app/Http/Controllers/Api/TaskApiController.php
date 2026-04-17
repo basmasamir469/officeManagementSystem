@@ -7,10 +7,12 @@ use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskStatusRequest;
 use App\Http\Resources\TaskResource;
 use App\Services\TaskService;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 
 class TaskApiController extends Controller
 {
+    use ApiResponseTrait;
     protected TaskService $taskService;
 
     public function __construct(TaskService $taskService)
@@ -40,7 +42,7 @@ class TaskApiController extends Controller
             return response()->json(['message' => 'Task not found.'], 404);
         }
 
-        return response()->json(new TaskResource($task));
+        return $this->successResponse(new TaskResource($task));
     }
 
     public function updateStatus(UpdateTaskStatusRequest $request, int $id)
@@ -48,9 +50,10 @@ class TaskApiController extends Controller
         $task = $this->taskService->updateTaskStatus($id, $request->validated()['status'], $request->user()->id);
 
         if (! $task) {
-            return response()->json(['message' => 'Task not found or cannot be updated.'], 404);
+            return $this->errorResponse('Task not found or cannot be updated.', 404);
         }
 
-        return response()->json(new TaskResource($task));
+        return $this->successResponse(new TaskResource($task), 'Task status updated successfully');
+
     }
 }

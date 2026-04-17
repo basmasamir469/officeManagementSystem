@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AttendanceResource;
 use App\Services\AttendanceService;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 
 class AttendanceApiController extends Controller
 {
+    use ApiResponseTrait;
+
     protected AttendanceService $attendanceService;
 
     public function __construct(AttendanceService $attendanceService)
@@ -18,14 +21,15 @@ class AttendanceApiController extends Controller
 
     public function index(Request $request)
     {
-        return AttendanceResource::collection($this->attendanceService->getEmployeeAttendance($request->user()->id));
+        $attendances = $this->attendanceService->getEmployeeAttendance($request->user()->id);
+        return $this->successResponse(AttendanceResource::collection($attendances));
     }
 
     public function checkIn(Request $request)
     {
         $attendance = $this->attendanceService->checkIn($request->user()->id);
 
-        return response()->json(new AttendanceResource($attendance), 201);
+        return $this->successResponse(new AttendanceResource($attendance), 'Checked in successfully', 201);
     }
 
     public function checkOut(Request $request)
@@ -33,10 +37,10 @@ class AttendanceApiController extends Controller
         $attendance = $this->attendanceService->checkOut($request->user()->id);
 
         if (! $attendance) {
-            return response()->json(['message' => 'No check-in record found for today.'], 404);
+            return $this->errorResponse('No check-in record found for today.', 404);
         }
 
-        return response()->json(new AttendanceResource($attendance));
+        return $this->successResponse(new AttendanceResource($attendance), 'Checked out successfully');
     }
 }
 

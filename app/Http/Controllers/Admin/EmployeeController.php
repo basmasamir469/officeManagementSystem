@@ -30,7 +30,15 @@ class EmployeeController extends Controller
 
     public function store(StoreEmployeeRequest $request)
     {
-        $this->employeeService->createEmployee($request->validated());
+        $employee = $this->employeeService->createEmployee($request->validated());
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'message' => 'Employee created successfully.',
+                'employee' => $employee,
+                'redirect' => route('admin.employees.index'),
+            ]);
+        }
 
         return redirect()->route('admin.employees.index')
             ->with('success', 'Employee created successfully.');
@@ -54,6 +62,13 @@ class EmployeeController extends Controller
     {
         $this->employeeService->updateEmployee($id, $request->validated());
 
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'message' => 'Employee updated successfully.',
+                'redirect' => route('admin.employees.index'),
+            ]);
+        }
+
         return redirect()->route('admin.employees.index')
             ->with('success', 'Employee updated successfully.');
     }
@@ -61,6 +76,12 @@ class EmployeeController extends Controller
     public function destroy(int $id)
     {
         $this->employeeService->deleteEmployee($id);
+
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'message' => 'Employee deleted successfully.',
+            ]);
+        }
 
         return redirect()->route('admin.employees.index')
             ->with('success', 'Employee deleted successfully.');

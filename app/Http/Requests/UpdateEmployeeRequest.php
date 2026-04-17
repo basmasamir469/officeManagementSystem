@@ -22,6 +22,7 @@ class UpdateEmployeeRequest extends FormRequest
             'position' => ['required', 'string', 'max:255'],
             'salary' => ['required', 'numeric', 'min:0'],
             'hire_date' => ['required', 'date'],
+                "password" => ['nullable', 'string', 'min:8', 'confirmed'],
         ];
     }
 }

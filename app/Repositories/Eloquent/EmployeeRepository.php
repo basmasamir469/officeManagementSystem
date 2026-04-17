@@ -34,6 +34,9 @@ class EmployeeRepository implements EmployeeRepositoryInterface
         if (! $employee) {
             return null;
         }
+        if($data['password'] === null){
+            unset($data['password']);
+        }
 
         $employee->update($data);
 

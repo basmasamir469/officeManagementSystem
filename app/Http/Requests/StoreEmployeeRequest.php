@@ -20,6 +20,7 @@ class StoreEmployeeRequest extends FormRequest
             'position' => ['required', 'string', 'max:255'],
             'salary' => ['required', 'numeric', 'min:0'],
             'hire_date' => ['required', 'date'],
+            "password" => ['required', 'string', 'min:8', 'confirmed'],
         ];
     }
 }

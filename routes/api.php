@@ -12,6 +12,7 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/store-fcm-token', [AuthController::class, 'storeFcmToken']);
     Route::get('/dashboard', [DashboardApiController::class, 'index']);
 
     Route::apiResource('employees', EmployeeApiController::class)->only([
